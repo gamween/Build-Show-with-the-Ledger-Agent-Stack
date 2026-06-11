@@ -1,0 +1,34 @@
+{
+  "name": "ledger-clearsign-agent",
+  "version": "1.0.0",
+  "description": "An AI invoice-paying agent whose Ledger device clear-signs the truth — so a poisoned invoice the agent can't see through is caught on the hardware screen.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "setup": "bash scripts/get-app-elf.sh",
+    "speculos": "bash scripts/speculos.sh start",
+    "speculos:stop": "bash scripts/speculos.sh stop",
+    "speculos:logs": "bash scripts/speculos.sh logs",
+    "demo": "tsx src/demo.ts",
+    "capture": "tsx scripts/capture-screens.ts",
+    "pay": "tsx src/cli.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ledgerhq/context-module": "^2.1.0",
+    "@ledgerhq/device-management-kit": "^1.6.0",
+    "@ledgerhq/device-signer-kit-ethereum": "^1.16.0",
+    "@ledgerhq/device-transport-kit-speculos": "^1.2.1",
+    "ethers": "^6.16.0",
+    "rxjs": "^7.8.2"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.32.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
