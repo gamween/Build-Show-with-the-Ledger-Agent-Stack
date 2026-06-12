@@ -1,5 +1,7 @@
 # Ledger Clear-Sign Agent
 
+![Ledger Clear-Sign Agent — field report](media/banner.png)
+
 **An AI invoice-paying agent that can be lied to — and a Ledger that can't.**
 
 Agents that move money read untrusted inputs: invoices, emails, web pages. Any
@@ -10,9 +12,9 @@ human compares what the device shows against who they actually meant to pay.
 
 > Software proposes. The hardware displays the truth. The human approves on the device.
 
-This is built on [Ledger's Agent Stack](https://developers.ledger.com/docs/ai-tools/overview)
-using the **Device Management Kit (DMK)** and runs end-to-end on the **Speculos**
-emulator — no physical device required.
+Built on [Ledger's Agent Stack](https://developers.ledger.com/docs/ai-tools/overview)
+with the **Device Management Kit (DMK)**, running end-to-end on the **Speculos**
+emulator — no physical device required. `#LedgerSponsor`
 
 It is deliberately *not* the policy-engine pattern (spend caps + allowlists
 enforced in software). The enforcement here is **What You See Is What You Sign**:
@@ -28,10 +30,18 @@ one carries an "updated remittance" note that swaps in an attacker's address —
 the textbook invoice-fraud move. The agent reads both and prepares a payment for
 whatever the invoice says. The Ledger shows the truth.
 
-| Clean invoice → recipient is the real supplier | Poisoned invoice → recipient is the attacker |
-| --- | --- |
-| ![clean recipient on device](assets/02-clean-recipient.png) | ![poisoned recipient on device](assets/04-poisoned-recipient.png) |
-| Approved on device → signed ✅ | Rejected on device → no signature ⛔ |
+![Method — the agent runs and the device clear-signs each payment](media/fig-method.png)
+
+**Exhibit A — clean invoice.** The device shows the real supplier. Approved on
+the device, and signed; the recovered sender is the device's own account.
+
+![Exhibit A — clean invoice, approved on device](media/fig-clean.png)
+
+**Exhibit B — poisoned invoice.** The agent is fooled into targeting an attacker.
+The device clear-signing reveals the attacker address, and it is rejected on the
+hardware. No signature is produced.
+
+![Exhibit B — poisoned invoice, rejected on device](media/fig-poisoned.png)
 
 ```
 Scenario 1 — clean invoice
@@ -50,6 +60,29 @@ Scenario 2 — poisoned invoice
 
 An agent holding a private key in a `.env` file would have signed and broadcast
 the poisoned payment with no human in the loop.
+
+---
+
+## Proof — the clear-signing flow on the device
+
+Real screenshots of the Speculos device during signing — the DMK signing flow on
+screen. Regenerate any time with `npm run capture`.
+
+**Clean invoice — the full clear-signing review:**
+
+| Review | Amount | To (supplier) | Sign |
+| :---: | :---: | :---: | :---: |
+| ![review](assets/06-review.png) | ![amount](assets/07-amount.png) | ![to supplier](assets/02-clean-recipient.png) | ![sign](assets/03-clean-sign.png) |
+
+**Poisoned invoice — the device reveals the attacker:**
+
+| To (attacker) | Rejected |
+| :---: | :---: |
+| ![to attacker](assets/04-poisoned-recipient.png) | ![rejected](assets/05-poisoned-reject.png) |
+
+A ~30-second walkthrough video (same field-report identity as this page) lives in
+[`video/`](video) — render it with `cd video && npm run render`
+(→ `video/out/clearsign-agent.mp4`).
 
 ---
 
