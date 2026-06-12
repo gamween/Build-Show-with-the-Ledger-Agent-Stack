@@ -10,31 +10,31 @@ import {
   useVideoConfig,
 } from "remotion";
 
-/* ── brand ──────────────────────────────────────────────────────────── */
-const C = {
-  bg: "#0A0A0B",
-  surface: "#141418",
-  surface2: "#1C1C22",
-  line: "#2B2B33",
-  text: "#FFFFFF",
-  dim: "#8A8A95",
-  green: "#2ED16A",
-  orange: "#FF4E16",
+/* ── art direction: "audit field report" on ledger paper ─────────────── */
+const P = {
+  paper: "#E6E8E5", // cool stone paper (deliberately not warm cream)
+  rule: "#D2D5CF", // faint ruling lines
+  ink: "#15181A",
+  inkDim: "#5D625E",
+  indigo: "#27345C", // structure / primary accent
+  green: "#1F7A4D", // approved stamp
+  red: "#A8392C", // rejected stamp
+  screen: "#000000", // device screen stays black — reads as an exhibit
+  panel: "#14171B", // terminal inset
 };
 const SANS =
-  '"SF Pro Display", "Helvetica Neue", system-ui, -apple-system, sans-serif';
-const MONO = '"SF Mono", ui-monospace, "JetBrains Mono", monospace';
+  '"SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif';
+const MONO = '"SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace';
 
 const SUPPLIER = "0xAC3e1D4f…70819203";
 const ATTACKER = "0xBaD000C0FFeE…7890ff";
+const TREASURY = "0xDad7…6d8d";
 const REPO = "github.com/gamween/Build-Show-with-the-Ledger-Agent-Stack";
 
-/* ── small helpers ──────────────────────────────────────────────────── */
-
-/** Fade a scene in over its first `pad` frames and out over its last `pad`. */
+/* ── motion helpers ──────────────────────────────────────────────────── */
 const Scene: React.FC<{ children: React.ReactNode; pad?: number }> = ({
   children,
-  pad = 14,
+  pad = 12,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -44,10 +44,14 @@ const Scene: React.FC<{ children: React.ReactNode; pad?: number }> = ({
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
-  return <AbsoluteFill style={{ opacity }}>{children}</AbsoluteFill>;
+  return (
+    <AbsoluteFill style={{ opacity, padding: "210px 130px 150px" }}>
+      {children}
+    </AbsoluteFill>
+  );
 };
 
-const useRise = (delay = 0, distance = 26) => {
+const useRise = (delay = 0, distance = 22) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const s = spring({ frame: frame - delay, fps, config: { damping: 200 } });
@@ -56,7 +60,6 @@ const useRise = (delay = 0, distance = 26) => {
     transform: `translateY(${interpolate(s, [0, 1], [distance, 0])}px)`,
   };
 };
-
 const Rise: React.FC<{
   delay?: number;
   distance?: number;
@@ -66,373 +69,431 @@ const Rise: React.FC<{
   <div style={{ ...useRise(delay, distance), ...style }}>{children}</div>
 );
 
-const Kicker: React.FC<{ children: React.ReactNode; color?: string }> = ({
+/* ── document furniture ──────────────────────────────────────────────── */
+const Tag: React.FC<{ children: React.ReactNode; color?: string }> = ({
   children,
-  color = C.dim,
+  color = P.indigo,
 }) => (
-  <div
+  <span
     style={{
       fontFamily: MONO,
-      fontSize: 26,
-      letterSpacing: 6,
+      fontSize: 22,
+      letterSpacing: 4,
       textTransform: "uppercase",
       color,
+      borderLeft: `3px solid ${color}`,
+      paddingLeft: 14,
     }}
   >
     {children}
+  </span>
+);
+
+const Header: React.FC = () => (
+  <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        padding: "70px 130px 26px",
+        fontFamily: MONO,
+        color: P.inkDim,
+        fontSize: 24,
+        letterSpacing: 2,
+      }}
+    >
+      <span style={{ color: P.ink, fontWeight: 600 }}>
+        CLEAR-SIGN AGENT
+        <span style={{ color: P.inkDim, fontWeight: 400 }}> · field report</span>
+      </span>
+      <span>LEDGER AGENT STACK · DMK + SPECULOS</span>
+    </div>
+    <div style={{ height: 2, background: P.ink, margin: "0 130px" }} />
   </div>
 );
 
-/** A pixelated emulator screenshot inside a device frame. */
-const Device: React.FC<{ src: string; glow: string }> = ({ src, glow }) => {
-  return (
+const Footer: React.FC = () => (
+  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
+    <div style={{ height: 1, background: P.rule, margin: "0 130px" }} />
     <div
       style={{
-        background: "#000",
-        borderRadius: 26,
-        border: `1px solid ${C.line}`,
-        padding: 26,
-        width: 560,
-        boxShadow: `0 0 80px ${glow}33`,
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "24px 130px 56px",
+        fontFamily: MONO,
+        fontSize: 22,
+        color: P.inkDim,
+        letterSpacing: 1,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
-        <div
-          style={{ width: 12, height: 12, borderRadius: 6, background: glow }}
-        />
-        <span style={{ fontFamily: MONO, fontSize: 20, color: C.dim }}>
-          Ledger · Speculos
-        </span>
-      </div>
+      <span>{REPO}</span>
+      <span style={{ color: P.red, letterSpacing: 3 }}>#LedgerSponsor</span>
+      <span>paid collaboration with @Ledger</span>
+    </div>
+  </div>
+);
+
+/* device screenshot framed as an evidence exhibit */
+const Exhibit: React.FC<{
+  src: string;
+  label: string;
+  accent: string;
+  caption: React.ReactNode;
+  width?: number;
+}> = ({ src, label, accent, caption, width = 540 }) => (
+  <div style={{ width }}>
+    <div
+      style={{
+        display: "inline-block",
+        fontFamily: MONO,
+        fontSize: 20,
+        letterSpacing: 3,
+        color: "#fff",
+        background: accent,
+        padding: "6px 14px",
+      }}
+    >
+      {label}
+    </div>
+    <div
+      style={{
+        background: P.screen,
+        border: `2px solid ${P.ink}`,
+        padding: 22,
+      }}
+    >
       <Img
         src={src}
         style={{
           width: "100%",
           imageRendering: "pixelated",
-          borderRadius: 8,
           display: "block",
         }}
       />
     </div>
-  );
-};
-
-const Badge: React.FC<{ color: string; label: string; sub: string }> = ({
-  color,
-  label,
-  sub,
-}) => (
-  <div
-    style={{
-      marginTop: 30,
-      display: "inline-flex",
-      flexDirection: "column",
-      gap: 6,
-      padding: "20px 30px",
-      borderRadius: 16,
-      background: `${color}1A`,
-      border: `1px solid ${color}`,
-    }}
-  >
-    <span
-      style={{
-        fontFamily: SANS,
-        fontSize: 34,
-        fontWeight: 700,
-        color,
-        letterSpacing: 1,
-      }}
-    >
-      {label}
-    </span>
-    <span style={{ fontFamily: MONO, fontSize: 22, color: C.dim }}>{sub}</span>
-  </div>
-);
-
-const Center: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <AbsoluteFill
-    style={{
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 120,
-      textAlign: "center",
-    }}
-  >
-    {children}
-  </AbsoluteFill>
-);
-
-/* ── scenes ─────────────────────────────────────────────────────────── */
-
-const Intro: React.FC = () => (
-  <Scene>
-    <Center>
-      <Rise delay={0}>
-        <Kicker color={C.orange}>Ledger Agent Stack · DMK + Speculos</Kicker>
-      </Rise>
-      <Rise delay={10} style={{ marginTop: 40 }}>
-        <div style={{ fontFamily: SANS, fontSize: 96, fontWeight: 700, color: C.text, lineHeight: 1.05 }}>
-          The agent can be lied to.
-        </div>
-      </Rise>
-      <Rise delay={26} style={{ marginTop: 10 }}>
-        <div style={{ fontFamily: SANS, fontSize: 96, fontWeight: 700, color: C.orange, lineHeight: 1.05 }}>
-          Its Ledger can&rsquo;t.
-        </div>
-      </Rise>
-      <Rise delay={48} style={{ marginTop: 44 }}>
-        <div style={{ fontFamily: MONO, fontSize: 30, color: C.dim }}>
-          an AI invoice-paying agent · clear-signed on hardware
-        </div>
-      </Rise>
-    </Center>
-  </Scene>
-);
-
-const Pipe: React.FC<{ label: string; delay: number; accent?: string }> = ({
-  label,
-  delay,
-  accent = C.text,
-}) => (
-  <Rise delay={delay}>
     <div
       style={{
         fontFamily: MONO,
-        fontSize: 30,
-        color: accent,
-        background: C.surface,
-        border: `1px solid ${C.line}`,
-        borderRadius: 14,
-        padding: "24px 34px",
+        fontSize: 24,
+        color: P.inkDim,
+        marginTop: 14,
+      }}
+    >
+      {caption}
+    </div>
+  </div>
+);
+
+const Stamp: React.FC<{ label: string; color: string; delay: number }> = ({
+  label,
+  color,
+  delay,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const s = spring({
+    frame: frame - delay,
+    fps,
+    config: { damping: 12, stiffness: 220, mass: 0.7 },
+  });
+  const scale = interpolate(s, [0, 1], [1.7, 1]);
+  const opacity = interpolate(frame - delay, [0, 5], [0, 0.92], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  return (
+    <div
+      style={{
+        transform: `rotate(-8deg) scale(${scale})`,
+        opacity,
+        color,
+        border: `5px solid ${color}`,
+        boxShadow: `inset 0 0 0 2px ${color}`,
+        borderRadius: 8,
+        padding: "14px 28px",
+        fontFamily: SANS,
+        fontWeight: 800,
+        fontSize: 46,
+        letterSpacing: 4,
+        textTransform: "uppercase",
       }}
     >
       {label}
     </div>
-  </Rise>
-);
+  );
+};
 
-const Arrow: React.FC<{ delay: number }> = ({ delay }) => (
-  <Rise delay={delay} distance={0}>
-    <div style={{ fontFamily: SANS, fontSize: 40, color: C.dim, margin: "0 22px" }}>→</div>
-  </Rise>
-);
-
-const Explainer: React.FC = () => (
-  <Scene>
-    <Center>
-      <Rise delay={0}>
-        <Kicker>How it works</Kicker>
-      </Rise>
-      <div
-        style={{
-          marginTop: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Pipe label="invoice" delay={8} />
-        <Arrow delay={16} />
-        <Pipe label="AI agent" delay={22} />
-        <Arrow delay={30} />
-        <Pipe label="Ledger" delay={36} accent={C.orange} />
-        <Arrow delay={44} />
-        <Pipe label="human approves" delay={50} />
+const Terminal: React.FC<{ lines: { t: string; c?: string }[]; delay: number }> = ({
+  lines,
+  delay,
+}) => {
+  const frame = useCurrentFrame();
+  return (
+    <div
+      style={{
+        background: P.panel,
+        borderRadius: 12,
+        padding: "26px 30px",
+        fontFamily: MONO,
+        fontSize: 27,
+        lineHeight: 1.7,
+        boxShadow: "0 24px 60px rgba(0,0,0,0.22)",
+      }}
+    >
+      <div style={{ display: "flex", gap: 9, marginBottom: 18 }}>
+        {["#FF5F57", "#FEBC2E", "#28C840"].map((c) => (
+          <div key={c} style={{ width: 14, height: 14, borderRadius: 7, background: c }} />
+        ))}
       </div>
-      <Rise delay={64} style={{ marginTop: 64 }}>
-        <div style={{ fontFamily: SANS, fontSize: 40, color: C.dim }}>
-          The agent <span style={{ color: C.text }}>proposes</span>. The device
-          shows the <span style={{ color: C.text }}>truth</span>. You{" "}
-          <span style={{ color: C.text }}>approve</span> on the hardware.
-        </div>
-      </Rise>
-    </Center>
-  </Scene>
-);
+      {lines.map((l, i) => {
+        const on = frame - delay - i * 9;
+        const opacity = interpolate(on, [0, 6], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        });
+        return (
+          <div key={i} style={{ opacity, color: l.c ?? "#D6D9DE" }}>
+            {l.t}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
-const InvoiceCard: React.FC<{
-  poisoned?: boolean;
-}> = ({ poisoned }) => (
+const InvoiceDoc: React.FC<{ poisoned?: boolean }> = ({ poisoned }) => (
   <div
     style={{
-      width: 640,
-      background: C.surface,
-      border: `1px solid ${C.line}`,
-      borderRadius: 22,
-      padding: 40,
+      width: 600,
+      background: "#FBFBF8",
+      border: `1px solid ${P.rule}`,
+      boxShadow: "0 18px 50px rgba(20,24,26,0.12)",
+      padding: 38,
       fontFamily: SANS,
     }}
   >
-    <div style={{ fontSize: 30, color: C.dim, marginBottom: 18 }}>
+    <div style={{ fontFamily: MONO, fontSize: 22, color: P.inkDim, marginBottom: 14 }}>
       invoice-{poisoned ? "poisoned" : "clean"}.md
     </div>
-    <div style={{ fontSize: 40, fontWeight: 700, color: C.text }}>
+    <div style={{ fontSize: 36, fontWeight: 700, color: P.ink }}>
       Invoice INV-2026-0481
     </div>
-    <Row k="From" v="ACME Studios Ltd" />
-    <Row k="Amount due" v="0.25 ETH" />
-    <Row k="Beneficiary" v={SUPPLIER} mono />
+    <Field k="From" v="ACME Studios Ltd" />
+    <Field k="Amount due" v="0.25 ETH" />
+    <Field k="Beneficiary" v={SUPPLIER} mono />
     {poisoned && (
       <div
         style={{
-          marginTop: 24,
-          padding: 24,
-          borderRadius: 14,
-          background: `${C.orange}14`,
-          border: `1px solid ${C.orange}`,
+          marginTop: 22,
+          padding: 20,
+          background: "#F7E9E6",
+          border: `1px solid ${P.red}`,
         }}
       >
-        <div style={{ fontFamily: MONO, fontSize: 22, color: C.orange, letterSpacing: 2 }}>
+        <div style={{ fontFamily: MONO, fontSize: 20, color: P.red, letterSpacing: 1 }}>
           ⚠ REMITTANCE UPDATE — “use our new address”
         </div>
-        <div style={{ fontFamily: MONO, fontSize: 28, color: C.text, marginTop: 12 }}>
+        <div style={{ fontFamily: MONO, fontSize: 26, color: P.ink, marginTop: 10 }}>
           {ATTACKER}
         </div>
       </div>
     )}
   </div>
 );
-
-const Row: React.FC<{ k: string; v: string; mono?: boolean }> = ({ k, v, mono }) => (
-  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 18 }}>
-    <span style={{ fontSize: 30, color: C.dim }}>{k}</span>
-    <span style={{ fontSize: 30, color: C.text, fontFamily: mono ? MONO : SANS }}>{v}</span>
+const Field: React.FC<{ k: string; v: string; mono?: boolean }> = ({ k, v, mono }) => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: 16,
+      borderBottom: `1px solid ${P.rule}`,
+      paddingBottom: 8,
+    }}
+  >
+    <span style={{ fontSize: 27, color: P.inkDim }}>{k}</span>
+    <span style={{ fontSize: 27, color: P.ink, fontFamily: mono ? MONO : SANS }}>{v}</span>
   </div>
 );
 
-const ScenarioLayout: React.FC<{
-  tag: string;
-  tagColor: string;
-  poisoned?: boolean;
-  deviceSrc: string;
-  deviceGlow: string;
-  caption: React.ReactNode;
-  badge: React.ReactNode;
-}> = ({ tag, tagColor, poisoned, deviceSrc, deviceGlow, caption, badge }) => (
+const FilmFrame: React.FC<{ src: string; label: string; delay: number }> = ({
+  src,
+  label,
+  delay,
+}) => (
+  <Rise delay={delay} style={{ textAlign: "center" }}>
+    <div style={{ background: P.screen, border: `2px solid ${P.ink}`, padding: 10, width: 230 }}>
+      <Img src={src} style={{ width: "100%", imageRendering: "pixelated", display: "block" }} />
+    </div>
+    <div style={{ fontFamily: MONO, fontSize: 20, color: P.inkDim, marginTop: 8, letterSpacing: 1 }}>
+      {label}
+    </div>
+  </Rise>
+);
+
+/* ── scenes ──────────────────────────────────────────────────────────── */
+const Title: React.FC = () => (
   <Scene>
-    <AbsoluteFill style={{ padding: "90px 120px" }}>
-      <Rise delay={0}>
-        <Kicker color={tagColor}>{tag}</Kicker>
-      </Rise>
-      <div
-        style={{
-          marginTop: 50,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 60,
-        }}
-      >
-        <Rise delay={8}>
-          <InvoiceCard poisoned={poisoned} />
-        </Rise>
-        <Rise delay={20} distance={0}>
-          <div style={{ fontFamily: SANS, fontSize: 56, color: C.dim }}>→</div>
-        </Rise>
-        <Rise delay={30}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-            <Device src={deviceSrc} glow={deviceGlow} />
-            <div style={{ marginTop: 22, fontFamily: SANS, fontSize: 30, color: C.dim }}>
-              {caption}
-            </div>
-            <Rise delay={48} distance={14}>
-              {badge}
-            </Rise>
-          </div>
-        </Rise>
+    <Rise delay={0}>
+      <Tag>Subject · WYSIWYS — what you see is what you sign</Tag>
+    </Rise>
+    <Rise delay={10} style={{ marginTop: 46 }}>
+      <div style={{ fontFamily: SANS, fontSize: 104, fontWeight: 800, color: P.ink, lineHeight: 1.02 }}>
+        The agent can be
+        <br />
+        lied to. Its Ledger
+        <br />
+        <span style={{ color: P.red }}>can&rsquo;t.</span>
       </div>
-    </AbsoluteFill>
+    </Rise>
+    <Rise delay={34} style={{ marginTop: 44 }}>
+      <div style={{ fontFamily: MONO, fontSize: 30, color: P.inkDim }}>
+        An AI invoice-paying agent · the recipient is clear-signed on hardware.
+      </div>
+    </Rise>
+  </Scene>
+);
+
+const Method: React.FC = () => (
+  <Scene>
+    <Rise delay={0}>
+      <Tag>Method</Tag>
+    </Rise>
+    <Rise delay={8} style={{ marginTop: 40 }}>
+      <div style={{ fontFamily: SANS, fontSize: 44, color: P.ink, lineHeight: 1.35 }}>
+        The agent reads an invoice → builds an Ethereum transaction →
+        <br />
+        the <b>Ledger clear-signs it</b> → a human approves on the device.
+      </div>
+    </Rise>
+    <Rise delay={26} style={{ marginTop: 50, width: 1180 }}>
+      <Terminal
+        delay={30}
+        lines={[
+          { t: "$ npm run demo", c: "#8FE3A6" },
+          { t: `treasury Ledger account (sender): ${TREASURY}`, c: "#D6D9DE" },
+          { t: "scenario 1 — clean invoice     → APPROVED on device · signed", c: "#8FE3A6" },
+          { t: "scenario 2 — poisoned invoice  → REJECTED on device · funds safe", c: "#F0A0A0" },
+        ]}
+      />
+    </Rise>
   </Scene>
 );
 
 const Clean: React.FC = () => (
-  <ScenarioLayout
-    tag="Scenario 1 — clean invoice"
-    tagColor={C.green}
-    deviceSrc={staticFile("clean-recipient.png")}
-    deviceGlow={C.green}
-    caption={
-      <>
-        device shows{" "}
-        <span style={{ fontFamily: MONO, color: C.text }}>{SUPPLIER}</span>
-      </>
-    }
-    badge={<Badge color={C.green} label="APPROVED ON DEVICE" sub="signed · sender = the Ledger account" />}
-  />
-);
-
-const Poisoned: React.FC = () => (
-  <ScenarioLayout
-    tag="Scenario 2 — poisoned invoice"
-    tagColor={C.orange}
-    poisoned
-    deviceSrc={staticFile("poisoned-recipient.png")}
-    deviceGlow={C.orange}
-    caption={
-      <>
-        device shows{" "}
-        <span style={{ fontFamily: MONO, color: C.orange }}>{ATTACKER}</span>{" "}
-        — not the supplier
-      </>
-    }
-    badge={<Badge color={C.orange} label="REJECTED ON DEVICE" sub="no signature · funds safe" />}
-  />
-);
-
-const Outro: React.FC = () => (
   <Scene>
-    <Center>
-      <Rise delay={0}>
-        <div style={{ fontFamily: SANS, fontSize: 46, color: C.dim, lineHeight: 1.4 }}>
-          Software proposes. Hardware displays the truth.
-          <br />
-          The human approves on the device.
+    <Rise delay={0}>
+      <Tag color={P.green}>Exhibit A · clean invoice</Tag>
+    </Rise>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 70, marginTop: 40 }}>
+      <Rise delay={8}>
+        <InvoiceDoc />
+      </Rise>
+      <Rise delay={20} style={{ position: "relative" }}>
+        <Exhibit
+          src={staticFile("clean-to.png")}
+          label="EXHIBIT A · DEVICE SCREEN"
+          accent={P.green}
+          caption={<>device shows {SUPPLIER}</>}
+        />
+        <div style={{ position: "absolute", right: -40, bottom: 86 }}>
+          <Stamp label="Approved" color={P.green} delay={44} />
         </div>
       </Rise>
-      <Rise delay={20} style={{ marginTop: 56 }}>
-        <div style={{ fontFamily: SANS, fontSize: 84, fontWeight: 700, color: C.text }}>
-          What You See Is What You Sign.
-        </div>
-      </Rise>
-      <Rise delay={42} style={{ marginTop: 60 }}>
-        <div style={{ fontFamily: MONO, fontSize: 28, color: C.dim }}>{REPO}</div>
-      </Rise>
-      <Rise delay={52} style={{ marginTop: 18 }}>
-        <div style={{ fontFamily: MONO, fontSize: 26, color: C.orange, letterSpacing: 3 }}>
-          #LedgerSponsor
-        </div>
-      </Rise>
-    </Center>
+    </div>
+    <div style={{ display: "flex", gap: 26, marginTop: 46 }}>
+      <FilmFrame src={staticFile("review.png")} label="Review" delay={54} />
+      <FilmFrame src={staticFile("amount.png")} label="Amount" delay={60} />
+      <FilmFrame src={staticFile("clean-to.png")} label="To" delay={66} />
+      <FilmFrame src={staticFile("clean-sign.png")} label="Sign" delay={72} />
+    </div>
   </Scene>
 );
 
-/* ── timeline ───────────────────────────────────────────────────────── */
+const Poisoned: React.FC = () => (
+  <Scene>
+    <Rise delay={0}>
+      <Tag color={P.red}>Exhibit B · poisoned invoice</Tag>
+    </Rise>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 70, marginTop: 40 }}>
+      <Rise delay={8}>
+        <InvoiceDoc poisoned />
+      </Rise>
+      <Rise delay={22} style={{ position: "relative" }}>
+        <Exhibit
+          src={staticFile("poisoned-to.png")}
+          label="EXHIBIT B · DEVICE SCREEN"
+          accent={P.red}
+          caption={
+            <>
+              device shows <span style={{ color: P.red }}>{ATTACKER}</span> — not the supplier
+            </>
+          }
+        />
+        <div style={{ position: "absolute", right: -50, bottom: 86 }}>
+          <Stamp label="Rejected" color={P.red} delay={46} />
+        </div>
+      </Rise>
+    </div>
+    <Rise delay={64} style={{ marginTop: 44 }}>
+      <div style={{ fontFamily: MONO, fontSize: 30, color: P.inkDim }}>
+        the agent was fooled · no signature produced · funds safe
+      </div>
+    </Rise>
+  </Scene>
+);
 
-export const Demo: React.FC = () => {
-  return (
-    <AbsoluteFill style={{ background: C.bg }}>
-      <Sequence durationInFrames={120}>
-        <Intro />
-      </Sequence>
-      <Sequence from={120} durationInFrames={130}>
-        <Explainer />
-      </Sequence>
-      <Sequence from={250} durationInFrames={220}>
-        <Clean />
-      </Sequence>
-      <Sequence from={470} durationInFrames={280}>
-        <Poisoned />
-      </Sequence>
-      <Sequence from={750} durationInFrames={150}>
-        <Outro />
-      </Sequence>
-    </AbsoluteFill>
-  );
-};
+const Finding: React.FC = () => (
+  <Scene>
+    <Rise delay={0}>
+      <Tag>Finding</Tag>
+    </Rise>
+    <Rise delay={8} style={{ marginTop: 40 }}>
+      <div style={{ fontFamily: SANS, fontSize: 42, color: P.inkDim, lineHeight: 1.4 }}>
+        Software proposes. Hardware displays the truth.
+        <br />
+        The human approves on the device.
+      </div>
+    </Rise>
+    <Rise delay={22} style={{ marginTop: 50 }}>
+      <div style={{ fontFamily: SANS, fontSize: 92, fontWeight: 800, color: P.ink }}>
+        What You See Is What You Sign.
+      </div>
+    </Rise>
+    <Rise delay={40} style={{ marginTop: 50 }}>
+      <div style={{ fontFamily: MONO, fontSize: 26, color: P.indigo, letterSpacing: 2 }}>
+        Built with the Ledger Agent Stack · DMK + Speculos · official Ethereum app
+      </div>
+    </Rise>
+  </Scene>
+);
+
+/* ── timeline ────────────────────────────────────────────────────────── */
+export const Demo: React.FC = () => (
+  <AbsoluteFill style={{ background: P.paper }}>
+    {/* ruled ledger paper */}
+    <AbsoluteFill
+      style={{
+        backgroundImage: `repeating-linear-gradient(${P.paper}, ${P.paper} 59px, ${P.rule} 59px, ${P.rule} 60px)`,
+        opacity: 0.5,
+      }}
+    />
+    <Header />
+    <Sequence durationInFrames={130}>
+      <Title />
+    </Sequence>
+    <Sequence from={130} durationInFrames={140}>
+      <Method />
+    </Sequence>
+    <Sequence from={270} durationInFrames={210}>
+      <Clean />
+    </Sequence>
+    <Sequence from={480} durationInFrames={250}>
+      <Poisoned />
+    </Sequence>
+    <Sequence from={730} durationInFrames={170}>
+      <Finding />
+    </Sequence>
+    <Footer />
+  </AbsoluteFill>
+);
